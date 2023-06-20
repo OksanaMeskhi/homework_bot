@@ -98,7 +98,10 @@ def parse_status(homework):
 
 def main():
     """Основная логика работы бота."""
-    check_tokens()
+    if not check_tokens():
+        logging.critical('Отсутствие обязательных переменных окружения')
+        sys.exit('Отсутствие обязательных переменных окружения')
+
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     timestamp = int(time.time())
     while True:
