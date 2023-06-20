@@ -83,18 +83,16 @@ def check_response(response):
 def parse_status(homework):
     """Извлекает статус."""
     logging.debug('Проверка извлечения статуса')
-    homework_name = homework['homework_name']
     if 'homework_name' not in homework:
-        raise KeyError('Отстутвует ключ "homework"')
-    status = homework.get('status')
-    if status not in HOMEWORK_VERDICTS:
-        error_message = f'Недокументированный статус "{status}"'
-        raise KeyError(error_message)
-    for key in ('status', 'homework_name'):
-        if key not in homework:
-            error_message = f'В ответе API нет ключа {key}'
-            raise KeyError(error_message)
-    verdict = HOMEWORK_VERDICTS[status]
+        logging.error('Отсутствие ожидаемых ключей в ответе API')
+        raise KeyError('Отсутствие ожидаемых ключей в ответе API')
+    homework_name = homework.get('homework_name')
+    homework_status = homework.get('status')
+
+    if homework_status not in HOMEWORK_VERDICTS:
+        logging.error('Неожиданный статус домашней работы')
+        raise SystemError('Неожиданный статус домашней работы')
+    verdict = HOMEWORK_VERDICTS[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
