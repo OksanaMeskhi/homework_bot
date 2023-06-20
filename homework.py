@@ -40,7 +40,7 @@ def check_tokens():
 
 
 def send_message(bot, message):
-    """Отправка сообщений в Telegram"""
+    """Отправка сообщений в Telegramю."""
     logging.debug('Начало отправки сообщения')
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
@@ -83,6 +83,7 @@ def check_response(response):
 def parse_status(homework):
     """Извлекает статус."""
     logging.debug('Проверка извлечения статуса')
+    homework_name = homework['homework_name']
     if 'homework_name' not in homework:
         raise KeyError('Отстутвует ключ "homework"')
     status = homework.get('status')
@@ -94,7 +95,7 @@ def parse_status(homework):
             error_message = f'В ответе API нет ключа {key}'
             raise KeyError(error_message)
     verdict = HOMEWORK_VERDICTS[status]
-    return f'Изменился статус проверки работы "{homework__name}". {verdict}'
+    return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
 def main():
@@ -106,8 +107,7 @@ def main():
         try:
             response = get_api_answer(timestamp)
             check_response(response)
-            homeworks = response['homeworks']
-            if homeworks:
+            if homeworks := response['homeworks']:
                 hw_status = parse_status(homeworks[0])
                 send_message(bot, hw_status)
                 continue
@@ -116,9 +116,6 @@ def main():
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(message)
-            if message != last_error:
-                last_error = message
-                send_message(bot, message)
         finally:
             time.sleep(RETRY_PERIOD)
 
