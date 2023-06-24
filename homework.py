@@ -41,6 +41,7 @@ def check_tokens():
     if not check_tokens():
         logging.critical('Отсутствие обязательных переменных окружения')
         sys.exit('Отсутствие обязательных переменных окружения')
+    exit()
 
 
 def send_message(bot, message):
@@ -104,11 +105,11 @@ def main():
     while True:
         try:
             response = get_api_answer(timestamp)
-            homework_date = check_response(response)
-            if len(homework_date) == 0:
+            homework = check_response(response)
+            if len(homework) == 0:
                 logging.debug('Статус не изменился')
             else:
-                message = parse_status(homework_date[0])
+                message = parse_status(homework)
                 send_message(bot, message)
                 timestamp = response.get('current_date', timestamp)
             old_message = ''
