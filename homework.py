@@ -62,7 +62,7 @@ def get_api_answer(timestamp):
         hw_answer = requests.get(**params)
     except requests.RequestException as error:
         error_message = f'{ENDPOINT} недоступен: {error}'
-        raise RequestExceptionError(error_message)
+        raise ConnectionError(error_message)
     if hw_answer.status_code != 200:
         raise ValueError(f'Статус страницы {hw_answer.status_code}')
     return hw_answer.json()
@@ -89,7 +89,8 @@ def parse_status(homework):
     homework_status = homework.get('status')
 
     if homework_status not in HOMEWORK_VERDICTS:
-        raise ValueError(f'Неожиданный статус домашней работы {homework_status}')
+        raise ValueError(
+            f'Неожиданный статус {homework_status}')
     verdict = HOMEWORK_VERDICTS[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
