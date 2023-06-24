@@ -31,17 +31,16 @@ HOMEWORK_VERDICTS = {
 
 def check_tokens():
     """Проверка доступности токенов."""
+    no_token_message = (
+        'Программа принудительно остановлена. '
+        'Отсутствует обязательная переменная окружения:')
     missing_tokens = []
     for token in TOKEN_NAMES:
         if not globals().get(token):
             missing_tokens = False
             missing_tokens.append(missing_tokens)
-            logging.critical(f'{token} недоступен')
+            logging.critical(f'{no_token_message} {token}')
         return missing_tokens
-    if not check_tokens():
-        logging.critical('Отсутствие обязательных переменных окружения')
-        sys.exit('Отсутствие обязательных переменных окружения')
-    exit()
 
 
 def send_message(bot, message):
@@ -99,7 +98,8 @@ def parse_status(homework):
 def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    check_tokens
+    if not check_tokens():
+        exit()
     timestamp = int(time.time())
     old_message = ''
     while True:
