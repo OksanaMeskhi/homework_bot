@@ -31,22 +31,23 @@ HOMEWORK_VERDICTS = {
 
 def check_tokens():
     """Проверка доступности токенов."""
-    token_status = True
+    missing_tokens = []
     for token in TOKEN_NAMES:
         if not globals().get(token):
-            token_status = False
+            missing_tokens = False
+            missing_tokens.append(missing_tokens)
             logging.critical(f'{token} недоступен')
-    return token_status
+        return missing_tokens
+    if not check_tokens():
+        logging.critical('Отсутствие обязательных переменных окружения')
+        sys.exit('Отсутствие обязательных переменных окружения')
 
 
 def send_message(bot, message):
     """Отправка сообщений в Telegramю."""
     logging.debug('Начало отправки сообщения')
-    try:
-        bot.send_message(TELEGRAM_CHAT_ID, message)
-        logging.debug('Сообщение отправлено')
-    except telegram.error.TelegramError:
-        logger.error('Ошибка при отправке сообщения')
+    bot.send_message(TELEGRAM_CHAT_ID, message)
+    logging.debug('Сообщение отправлено')
 
 
 def get_api_answer(timestamp):
@@ -61,11 +62,10 @@ def get_api_answer(timestamp):
         hw_answer = requests.get(**params)
     except requests.RequestException as error:
         error_message = f'{ENDPOINT} недоступен: {error}'
-    else:
-        if hw_answer.status_code != 200:
-            error_message = 'Статус страницы {hw_answer.status_code}'
-            raise AssertionError(error_message)
-        return hw_answer.json()
+        raise RequestExceptionError(error_message)
+    if hw_answer.status_code != 200:
+        raise ValueError(f'Статус страницы {hw_answer.status_code}')
+    return hw_answer.json()
 
 
 def check_response(response):
@@ -84,39 +84,39 @@ def parse_status(homework):
     """Извлекает статус."""
     logging.debug('Проверка извлечения статуса')
     if 'homework_name' not in homework:
-        logging.error('Отсутствие ожидаемых ключей в ответе API')
         raise KeyError('Отсутствие ожидаемых ключей в ответе API')
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
 
     if homework_status not in HOMEWORK_VERDICTS:
-        logging.error('Неожиданный статус домашней работы')
-        raise SystemError('Неожиданный статус домашней работы')
+        raise ValueError(f'Неожиданный статус домашней работы {homework_status}')
     verdict = HOMEWORK_VERDICTS[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
 def main():
     """Основная логика работы бота."""
-    if not check_tokens():
-        logging.critical('Отсутствие обязательных переменных окружения')
-        sys.exit('Отсутствие обязательных переменных окружения')
-
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
+    check_tokens
     timestamp = int(time.time())
+    old_message = ''
     while True:
         try:
             response = get_api_answer(timestamp)
-            check_response(response)
-            if homeworks := response['homeworks']:
-                hw_status = parse_status(homeworks[0])
-                send_message(bot, hw_status)
-                continue
-            logging.debug('Статус hw не изменился')
-            timestamp = response['current_date']
+            homework_date = check_response(response)
+            if len(homework_date) == 0:
+                logging.debug('Статус не изменился')
+            else:
+                message = parse_status(homework_date[0])
+                send_message(bot, message)
+                timestamp = response.get('current_date', timestamp)
+            old_message = ''
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(message)
+            if old_message != message:
+                send_message(bot, message)
+                old_message = message
         finally:
             time.sleep(RETRY_PERIOD)
 
@@ -127,5 +127,4 @@ if __name__ == '__main__':
         stream=sys.stdout,
         format='%(asctime)s, %(levelname)s, %(message)s',
     )
-    logger = logging.getLogger(__name__)
     main()
