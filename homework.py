@@ -90,8 +90,10 @@ def parse_status(homework):
     homework_status = homework.get('status')
 
     if homework_status not in HOMEWORK_VERDICTS:
-        raise ValueError(
+        error_detail = (
             f'Неожиданный статус {homework_status}')
+        logging.error(error_detail)
+        raise ValueError(error_detail)
     verdict = HOMEWORK_VERDICTS[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
