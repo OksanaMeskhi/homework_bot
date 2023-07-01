@@ -100,8 +100,8 @@ def parse_status(homework):
 
 def main():
     """Основная логика работы бота."""
+    check_tokens()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    check_tokens
     timestamp = int(time.time())
     old_message = ''
     while True:
@@ -110,6 +110,7 @@ def main():
             homework = check_response(response)
             if len(homework) == 0:
                 logging.debug('Статус не изменился')
+                send_message(bot, text='Статус не изменился')
             else:
                 message = parse_status(homework)
                 send_message(bot, message)
