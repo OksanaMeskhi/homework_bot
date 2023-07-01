@@ -37,6 +37,7 @@ def check_tokens():
             missing_tokens = False
             missing_tokens.append(missing_tokens)
             logging.critical(f'{token} недоступен')
+            sys.exit(f'{token} недоступен')
         return missing_tokens
     if not check_tokens():
         logging.critical('Отсутствие обязательных переменных окружения')
