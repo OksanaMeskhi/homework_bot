@@ -41,7 +41,7 @@ def check_tokens():
     if not check_tokens():
         logging.critical('Отсутствие обязательных переменных окружения')
         sys.exit('Отсутствие обязательных переменных окружения')
-    exit()
+    return
 
 
 def send_message(bot, message):
