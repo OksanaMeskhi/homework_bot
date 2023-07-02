@@ -115,7 +115,7 @@ def main():
             else:
                 message = parse_status(homework)
                 send_message(bot, message)
-                timestamp = response.get('current_date', timestamp)
+                # timestamp = response.get('current_date', timestamp)
             old_message = ''
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
