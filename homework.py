@@ -102,27 +102,21 @@ def parse_status(homework):
 def main():
     """Основная логика работы бота."""
     check_tokens()
+    logging.debug('Инициализация бота')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    timestamp = int(time.time())
-    old_message = ''
+    logging.debug('Бот успешно инициализирован')
     while True:
         try:
-            response = get_api_answer(timestamp)
-            homework = check_response(response)
-            if len(homework) == 0:
-                logging.debug('Статус не изменился')
-                send_message(bot, text='Статус не изменился')
+            timestamp = int(time.time())
+            responce = check_response(get_api_answer(timestamp))
+            if responce['homeworks'] == []:
+                logging.debug('Отсутствуют новые ответы')
+                send_message(bot, text='Отсутствуют новые ответы')
             else:
-                message = parse_status(homework)
-                send_message(bot, message)
-                timestamp = response.get('current_date', timestamp)
-            old_message = ''
-        except Exception as error:
-            message = f'Сбой в работе программы: {error}'
-            logging.error(message)
-            if old_message != message:
-                send_message(bot, message)
-                old_message = message
+                for homework in responce['homeworks']:
+                    send_message(bot, parse_status(homework))
+        except Exception:
+            logging.exception('Сбой в работе программы')
         finally:
             time.sleep(RETRY_PERIOD)
 
