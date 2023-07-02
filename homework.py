@@ -39,7 +39,7 @@ def check_tokens():
             logging.critical(f'{token} недоступен')
             sys.exit(f'{token} недоступен')
         return missing_tokens
-    if not check_tokens():
+    if not TOKEN_NAMES:
         logging.critical('Отсутствие обязательных переменных окружения')
         sys.exit('Отсутствие обязательных переменных окружения')
     return
@@ -115,7 +115,7 @@ def main():
             else:
                 message = parse_status(homework)
                 send_message(bot, message)
-                # timestamp = response.get('current_date', timestamp)
+                timestamp = response.get('current_date', timestamp)
             old_message = ''
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
