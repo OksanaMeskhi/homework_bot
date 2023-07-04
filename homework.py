@@ -109,15 +109,22 @@ def main():
     timestamp = int(time.time())
     while True:
         try:
-            response = check_response(get_api_answer(timestamp))
-            if response['homeworks'] == []:
+            response = get_api_answer(timestamp)
+            hw_date = check_response(response)
+            if len[hw_date] == 0:
                 logging.debug('Отсутствуют новые ответы')
-                send_message(bot, text='Отсутствуют новые ответы')
+                # send_message(bot, text='Отсутствуют новые ответы')
             else:
-                for homework in response['homeworks']:
-                    send_message(bot, parse_status(homework))
-        except Exception:
-            logging.exception('Сбой в работе программы')
+                message = parse_status(hw_date[0])
+                send_message(bot, message)
+                timestamp = response.get('current_date')
+            old_message = ''
+        except Exception as error:
+            message = f'Сбой в работе программы {error}'
+            logging.error(message)
+            if old_message != message:
+                send_message(bot, message)
+                old_message = message
         finally:
             time.sleep(RETRY_PERIOD)
 
