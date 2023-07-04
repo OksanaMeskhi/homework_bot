@@ -31,18 +31,17 @@ HOMEWORK_VERDICTS = {
 
 def check_tokens():
     """Проверка доступности токенов."""
-    missing_tokens = []
-    for token in TOKEN_NAMES:
-        if not globals().get(token):
-            missing_tokens = False
-            missing_tokens.append(missing_tokens)
-            logging.critical(f'{token} недоступен')
-            sys.exit(f'{token} недоступен')
-        return missing_tokens
-    if not TOKEN_NAMES:
-        logging.critical('Отсутствие обязательных переменных окружения')
-        sys.exit('Отсутствие обязательных переменных окружения')
-    return
+    tokens = ['PRACTICUM_TOKEN', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID']
+    counter = 0
+    for name in tokens:
+        token = globals()[name]
+        if not token:
+            counter += 1
+            logging.critical(f'{name} недоступен')
+    if counter > 0:
+        return False
+    logging.info('Отсутствие обязательных переменных окружения')
+    return True
 
 
 def send_message(bot, message):
