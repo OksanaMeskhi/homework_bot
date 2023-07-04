@@ -110,7 +110,7 @@ def main():
         try:
             response = get_api_answer(timestamp)
             hw_date = check_response(response)
-            if len[hw_date] == 0:
+            if len(hw_date) == 0:
                 logging.debug('Отсутствуют новые ответы')
                 # send_message(bot, text='Отсутствуют новые ответы')
             else:
