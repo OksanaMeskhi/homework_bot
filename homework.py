@@ -39,7 +39,7 @@ def check_tokens():
             counter += 1
             logging.critical(f'{name} недоступен')
     if counter > 0:
-        return False
+        sys.exit()
     logging.info('Отсутствие обязательных переменных окружения')
     return True
 
