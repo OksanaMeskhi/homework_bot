@@ -106,15 +106,15 @@ def main():
     logging.debug('Инициализация бота')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     logging.debug('Бот успешно инициализирован')
+    timestamp = int(time.time())
     while True:
         try:
-            timestamp = int(time.time())
-            responce = check_response(get_api_answer(timestamp))
-            if responce['homeworks'] == []:
+            response = check_response(get_api_answer(timestamp))
+            if response['homeworks'] == []:
                 logging.debug('Отсутствуют новые ответы')
                 send_message(bot, text='Отсутствуют новые ответы')
             else:
-                for homework in responce['homeworks']:
+                for homework in response['homeworks']:
                     send_message(bot, parse_status(homework))
         except Exception:
             logging.exception('Сбой в работе программы')
