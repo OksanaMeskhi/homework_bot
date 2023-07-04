@@ -76,10 +76,11 @@ def check_response(response):
     if not isinstance(response, dict):
         raise TypeError('Ответ не является словарем')
     if 'homeworks' not in response:
-        raise TypeError('Ответ не содержит ключ homeworks')
+        raise KeyError('Ответ не содержит ключ homeworks')
     if not isinstance(response['homeworks'], list):
         raise TypeError('homeworks данные приходят не в виде списка')
     logging.debug('Проверка выполнена успешно')
+    return response['homeworks']
 
 
 def parse_status(homework):
