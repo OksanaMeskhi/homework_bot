@@ -34,11 +34,11 @@ HOMEWORK_VERDICTS = {
 
 def check_tokens():
     """Проверка доступности токенов."""
-    no_token = [
-        name for name in TOKEN_NAMES
+    if no_token := [
+        name
+        for name in TOKEN_NAMES
         if name not in globals() or not globals()[name]
-    ]
-    if no_token:
+    ]:
         logging.critical(NO_TOKEN.format(tokens=no_token))
         sys.exit(1)
 
