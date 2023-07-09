@@ -40,7 +40,7 @@ def check_tokens():
         if name not in globals() or not globals()[name]
     ]:
         logging.critical(NO_TOKEN.format(tokens=no_token))
-        sys.exit(1)
+        sys.exit()
 
 
 def send_message(bot, message):
