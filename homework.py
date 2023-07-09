@@ -1,7 +1,9 @@
+import contextlib
 import logging
 import os
 import sys
 import time
+from http import HTTPStatus
 
 
 import requests
@@ -16,6 +18,7 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 TOKEN_NAMES = ('PRACTICUM_TOKEN', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID')
+NO_TOKEN = 'Отсутствуют переменные окружения: {tokens}'
 
 RETRY_PERIOD = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
@@ -31,17 +34,13 @@ HOMEWORK_VERDICTS = {
 
 def check_tokens():
     """Проверка доступности токенов."""
-    tokens = ['PRACTICUM_TOKEN', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID']
-    counter = 0
-    for name in tokens:
-        token = globals()[name]
-        if not token:
-            counter += 1
-            logging.critical(f'{name} недоступен')
-    if counter > 0:
+    if no_token := [
+        name
+        for name in TOKEN_NAMES
+        if name not in globals() or not globals()[name]
+    ]:
+        logging.critical(NO_TOKEN.format(tokens=no_token))
         sys.exit()
-    logging.info('Отсутствие обязательных переменных окружения')
-    return True
 
 
 def send_message(bot, message):
@@ -63,9 +62,9 @@ def get_api_answer(timestamp):
         hw_answer = requests.get(**params)
     except requests.RequestException as error:
         error_message = f'{ENDPOINT} недоступен: {error}'
-        raise ConnectionError(error_message)
-    if hw_answer.status_code != 200:
-        raise ValueError(f'Статус страницы {hw_answer.status_code}')
+        raise ConnectionError(error_message) from error
+    if hw_answer.status_code != HTTPStatus.OK:
+        raise ValueError(f'Статус ответа {hw_answer.status_code}')
     return hw_answer.json()
 
 
@@ -87,13 +86,12 @@ def parse_status(homework):
     logging.debug('Проверка извлечения статуса')
     if 'homework_name' not in homework:
         raise KeyError('Отсутствие ожидаемых ключей в ответе API')
-    homework_name = homework.get('homework_name')
+    homework_name = homework('homework_name')
     homework_status = homework.get('status')
 
     if homework_status not in HOMEWORK_VERDICTS:
         error_detail = (
             f'Неожиданный статус {homework_status}')
-        logging.error(error_detail)
         raise ValueError(error_detail)
     verdict = HOMEWORK_VERDICTS[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
@@ -106,24 +104,23 @@ def main():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     logging.debug('Бот успешно инициализирован')
     timestamp = int(time.time())
+    old_message = ''
     while True:
         try:
             response = get_api_answer(timestamp)
             hw_date = check_response(response)
-            if len(hw_date) == 0:
-                logging.debug('Отсутствуют новые ответы')
-                # send_message(bot, text='Отсутствуют новые ответы')
-            else:
+            if hw_date is not None:
                 message = parse_status(hw_date[0])
                 send_message(bot, message)
-                timestamp = response.get('current_date')
-            old_message = ''
+                timestamp = response.get('current_date', timestamp)
+
         except Exception as error:
             message = f'Сбой в работе программы {error}'
             logging.error(message)
             if old_message != message:
-                send_message(bot, message)
-                old_message = message
+                with contextlib.suppress(Exception):
+                    send_message(bot, message)
+                    old_message = message
         finally:
             time.sleep(RETRY_PERIOD)
 
