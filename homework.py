@@ -63,7 +63,7 @@ def get_api_answer(timestamp):
     except requests.RequestException as error:
         error_message = f'{ENDPOINT} недоступен: {error}'
         raise ConnectionError(error_message) from error
-    if hw_answer.status_code != HTTPStatus:
+    if hw_answer.status_code != HTTPStatus.OK:
         raise ValueError(f'Статус ответа {hw_answer.status_code}')
     return hw_answer.json()
 
