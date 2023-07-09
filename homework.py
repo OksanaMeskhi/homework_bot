@@ -86,7 +86,7 @@ def parse_status(homework):
     logging.debug('Проверка извлечения статуса')
     if 'homework_name' not in homework:
         raise KeyError('Отсутствие ожидаемых ключей в ответе API')
-    homework_name = homework('homework_name')
+    homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
 
     if homework_status not in HOMEWORK_VERDICTS:
