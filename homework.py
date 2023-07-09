@@ -119,7 +119,8 @@ def main():
             logging.error(message)
             if old_message != message:
                 with contextlib.suppress(Exception):
-                    send_message(bot, old_message)
+                    send_message(bot, message)
+                    old_message = message
         finally:
             time.sleep(RETRY_PERIOD)
 
