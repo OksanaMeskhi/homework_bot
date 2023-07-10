@@ -37,10 +37,10 @@ def check_tokens():
     if no_token := [
         name
         for name in TOKEN_NAMES
-        if name not in globals() or not globals()[name]
+        if not globals()[name]
     ]:
         logging.critical(NO_TOKEN.format(tokens=no_token))
-        sys.exit()
+        sys.exit(1)
 
 
 def send_message(bot, message):
@@ -110,17 +110,19 @@ def main():
             response = get_api_answer(timestamp)
             hw_date = check_response(response)
             if hw_date is not None:
+                logging.debug('Нет обновлений')
                 message = parse_status(hw_date[0])
-                send_message(bot, message)
+                if old_message != message:
+                    send_message(bot, message)
                 timestamp = response.get('current_date', timestamp)
 
         except Exception as error:
             message = f'Сбой в работе программы {error}'
             logging.error(message)
             if old_message != message:
-                with contextlib.suppress(Exception):
+                with contextlib.suppress(telegram.error.TelegramError):
                     send_message(bot, message)
-                    old_message = message
+                old_message = message
         finally:
             time.sleep(RETRY_PERIOD)
 
