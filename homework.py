@@ -113,11 +113,11 @@ def main():
                 logging.debug('Нет обновлений')
                 message = parse_status(hw_date[0])
             else:
-                logging.error('Нет обновлений')
-                if old_message != message:
-                    send_message(bot, message)
-                    timestamp = response.get('current_date', timestamp)
-                    old_message = ''
+                logging.debug('Нет обновлений')
+            if old_message != message:
+                send_message(bot, message)
+                timestamp = response.get('current_date', timestamp)
+                old_message = message.copy()
 
         except Exception as error:
             message = f'Сбой в работе программы {error}'
