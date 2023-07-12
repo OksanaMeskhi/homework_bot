@@ -109,8 +109,7 @@ def main():
         try:
             response = get_api_answer(timestamp)
             hw_date = check_response(response)
-            if hw_date is not None:
-                logging.debug('Нет обновлений')
+            if hw_date:
                 message = parse_status(hw_date[0])
                 if old_message != message:
                     send_message(bot, message)
